@@ -32,8 +32,9 @@ body {
 
 
 * {
-
   font-family: "Montserrat", sans-serif;
+  box-sizing: initial;
+  line-height: 1.5;
 }
 
 /* Estilizando a scrollbar */
@@ -59,4 +60,5 @@ body {
   -webkit-text-fill-color: transparent; /* Torna o preenchimento do texto transparente */
   text-shadow: 0 0 20px #4ECB71, 0 0 250px #4ECB71; /* Efeito de glow forte */
   margin: 20px 0; /* Margem superior e inferior */
+  font-weight: 700;
 }

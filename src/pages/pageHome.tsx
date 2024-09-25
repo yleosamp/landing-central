@@ -259,7 +259,7 @@ const App = () => {
           </div>
           <div style={textContainerStyle}>
             <h2 style={{fontSize: '2.8em', marginBottom: '20px'}} className='central-title'>Para empresas</h2>
-            <h3 style={{fontSize: '1.5em', marginBottom: '20px'}}>Solução para a sua empresa</h3>
+            <h3 style={{fontSize: '1.5em', marginBottom: '20px', fontWeight: '700'}}>Solução para a sua empresa</h3>
             <p style={{marginBottom: '20px'}}>
               Ofereça aos seus funcionários uma plataforma para organizar partidas de futebol e fortalecer o espírito de equipe. Aumente a produtividade e o bem-estar no ambiente de trabalho.
             </p>
