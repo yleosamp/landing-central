@@ -1,6 +1,7 @@
 import '../index.css'; // Ajuste o caminho se necessário
 import { useState, useEffect } from 'react'
 import { ChevronDown, Plus, Settings, Briefcase } from 'lucide-react'
+import ModalCampo from './components/modalv2'; // Importa o componente ModalCampo
 
 interface Agendamento {
   id: number
@@ -33,6 +34,7 @@ export default function InterfaceAgendamento() {
   const [semanaAtual, setSemanaAtual] = useState(1)
   const [dropdownAberto, setDropdownAberto] = useState(false)
   const [lucroSemanal, setLucroSemanal] = useState(0) // Armazena o lucro semanal
+  const [modalAberto, setModalAberto] = useState(false); // Estado para controlar a abertura do modal
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
@@ -95,6 +97,14 @@ export default function InterfaceAgendamento() {
     if (response.ok) {
       setAgendamentos(prev => prev.filter(agendamento => agendamento.id !== id))
     }
+  }
+
+  const abrirModal = () => {
+    setModalAberto(true);
+  }
+
+  const fecharModal = () => {
+    setModalAberto(false);
   }
 
   return (
@@ -180,7 +190,10 @@ export default function InterfaceAgendamento() {
             </div>
           </div>
           <div className="space-y-2 w-full sm:w-auto">
-            <button className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center">
+            <button 
+              onClick={abrirModal} 
+              className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center"
+            >
               <Plus size={16} className="mr-2" />
               Adicionar campo
             </button>
@@ -195,6 +208,7 @@ export default function InterfaceAgendamento() {
           </div>
         </div>
       </div>
+      {modalAberto && <ModalCampo onClose={fecharModal} />}
     </div>
   )
 }
