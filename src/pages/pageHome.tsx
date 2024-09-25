@@ -267,9 +267,9 @@ const App = () => {
               <a href="#" style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BA55D'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4ECB71'}>
                 Criar sua empresa
               </a>
-              <button style={secondaryButtonStyle} onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#000000';}} onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#FFFFFF';}}>
-                Saiba mais
-              </button>
+              <a href="/empresa" style={secondaryButtonStyle} onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#000000';}} onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#FFFFFF';}}>
+                Entrar
+              </a>
             </div>
           </div>
         </div>
