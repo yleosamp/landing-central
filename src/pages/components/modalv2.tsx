@@ -108,7 +108,7 @@ export default function ModalCampo({ onClose }: { onClose: () => void }) {
     const response = await fetch('http://localhost:4444/api/businessManagement/campo', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiaWF0IjoxNzI3MDQyOTgwfQ.obc2iG__NqWyoUltoN0AFzqI1DByHVAU_CQp7dcDU_A',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsImlhdCI6MTcyNzM1NTEyM30.Qxb_5razh4mP8QzdE8Ldq9f862J3YjPsq9H6Y6cF46U',
       },
       body: formData
     })
