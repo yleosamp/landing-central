@@ -31,10 +31,11 @@ function LoginPage() {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Login successful, store token and redirect to /registro
-        localStorage.setItem('authToken', data.token);
+        // Login successful, store token and redirect to /businessManagement
+        const authorization = `Bearer ${data.token}`;
+        localStorage.setItem('authorization', authorization);
         navigate('/empresa', { 
-          state: { token: data.token }
+          state: { token: authorization }
         });
       } else {
         setError(data.message || 'Erro ao fazer login. Por favor, tente novamente.');

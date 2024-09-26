@@ -35,12 +35,20 @@ export default function InterfaceAgendamento() {
   const [dropdownAberto, setDropdownAberto] = useState(false)
   const [lucroSemanal, setLucroSemanal] = useState(0) // Armazena o lucro semanal
   const [modalAberto, setModalAberto] = useState(false); // Estado para controlar a abertura do modal
+  const [naoAutenticado, setNaoAutenticado] = useState(false); // Estado para controlar a mensagem de não autenticado
+  const [token, setToken] = useState<string | null>(null); // Estado para armazenar o token
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
+      const token = localStorage.getItem('authorization'); // Obtém o token de autorização do localStorage
+      setToken(token); // Atualiza o estado do token
+      if (!token) {
+        setNaoAutenticado(true); // Se não tiver token, seta como não autenticado
+        return;
+      }
       const response = await fetch('http://localhost:4444/api/businessManagement/agendamentos', {
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsImlhdCI6MTcyNzM1NTEyM30.Qxb_5razh4mP8QzdE8Ldq9f862J3YjPsq9H6Y6cF46U'
+          'Authorization': token ? token : '' // Garante que o token não seja null
         }
       })
       const data = await response.json()
@@ -48,7 +56,11 @@ export default function InterfaceAgendamento() {
 
       // Busca os perfis dos clientes
       const perfilPromises = data.agendamentos.map((agendamento: Agendamento) =>
-        fetch(`http://localhost:4444/api/accountmanagement/profile/${agendamento.idcliente}`)
+        fetch(`http://localhost:4444/api/accountmanagement/profile/${agendamento.idcliente}`, {
+          headers: {
+            'Authorization': token ? token : '' // Garante que o token não seja null
+          }
+        })
           .then(res => res.json())
           .then(profileData => {
             setPerfis(prev => ({ ...prev, [agendamento.idcliente]: profileData.profile }));
@@ -57,7 +69,11 @@ export default function InterfaceAgendamento() {
 
       // Busca os preços dos campos
       const precoPromises = data.agendamentos.map((agendamento: Agendamento) =>
-        fetch(`http://localhost:4444/api/home/campos/${agendamento.idcampo}`)
+        fetch(`http://localhost:4444/api/home/campos/${agendamento.idcampo}`, {
+          headers: {
+            'Authorization': token ? token : '' // Garante que o token não seja null
+          }
+        })
           .then(res => res.json())
           .then(precoData => {
             setPrecos(prev => ({ ...prev, [agendamento.idcampo]: precoData[0].preco })); // Armazena o preço
@@ -88,10 +104,15 @@ export default function InterfaceAgendamento() {
   }
 
   const apagarAgendamento = async (id: number) => {
+    const token = localStorage.getItem('authorization'); // Obtém o token de autorização do localStorage
+    if (!token) {
+      setNaoAutenticado(true); // Se não tiver token, seta como não autenticado
+      return;
+    }
     const response = await fetch(`http://localhost:4444/api/businessManagement/delete-agendamento/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsImlhdCI6MTcyNzM1NTEyM30.Qxb_5razh4mP8QzdE8Ldq9f862J3YjPsq9H6Y6cF46U'
+        'Authorization': token ? token : '' // Usa o token de autorização obtido
       }
     })
     if (response.ok) {
@@ -109,7 +130,12 @@ export default function InterfaceAgendamento() {
 
   return (
     <div className="min-h-screen bg-black text-white p-6 flex flex-col space-y-6">
-      {agendamentos.length > 0 ? (
+      {naoAutenticado && (
+        <div className="text-center text-lg font-semibold">
+          NÃO AUTENTICADO
+        </div>
+      )}
+      {!naoAutenticado && agendamentos.length > 0 ? (
         <div className="space-y-4">
           {agendamentos.map((agendamento, index) => (
             <div key={index} className="bg-zinc-900 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
@@ -208,7 +234,7 @@ export default function InterfaceAgendamento() {
           </div>
         </div>
       </div>
-      {modalAberto && <ModalCampo onClose={fecharModal} />}
+      {modalAberto && <ModalCampo onClose={fecharModal} token={token} />} {/* Passa o token ao componente ModalCampo */}
     </div>
   )
 }

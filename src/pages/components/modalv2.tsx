@@ -45,7 +45,7 @@ const horariosIniciais: Horario[] = [
   { id: 35, hora: '19:00', dia: 'sexta' },
 ]
 
-export default function ModalCampo({ onClose }: { onClose: () => void }) {
+export default function ModalCampo({ onClose, token }: { onClose: () => void, token: string }) {
   const [nomeCampo, setNomeCampo] = useState('')
   const [preco, setPreco] = useState('')
   const [disponivel, setDisponivel] = useState<boolean | null>(null)
@@ -108,7 +108,7 @@ export default function ModalCampo({ onClose }: { onClose: () => void }) {
     const response = await fetch('http://localhost:4444/api/businessManagement/campo', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIsImlhdCI6MTcyNzM1NTEyM30.Qxb_5razh4mP8QzdE8Ldq9f862J3YjPsq9H6Y6cF46U',
+        'Authorization': token,
       },
       body: formData
     })
@@ -117,7 +117,7 @@ export default function ModalCampo({ onClose }: { onClose: () => void }) {
       console.log('Informações enviadas com sucesso!')
       onClose() // Fecha o modal após enviar as informações
     } else {
-      console.error('Erro ao enviar as informações.')
+      console.error(`Erro ao enviar as informações. Token: ${token}`)
     }
   }
 
