@@ -2,6 +2,7 @@ import '../index.css'; // Ajuste o caminho se necessário
 import { useState, useEffect } from 'react'
 import { ChevronDown, Plus, Settings, Briefcase } from 'lucide-react'
 import ModalCampo from './components/modalv2'; // Importa o componente ModalCampo
+import ModalCampos from './components/modalCampos'; // Importa o componente ModalCampos
 
 interface Agendamento {
   id: number
@@ -35,8 +36,10 @@ export default function InterfaceAgendamento() {
   const [dropdownAberto, setDropdownAberto] = useState(false)
   const [lucroSemanal, setLucroSemanal] = useState(0) // Armazena o lucro semanal
   const [modalAberto, setModalAberto] = useState(false); // Estado para controlar a abertura do modal
+  const [modalCamposAberto, setModalCamposAberto] = useState(false); // Estado para controlar a abertura do modal de campos
   const [naoAutenticado, setNaoAutenticado] = useState(false); // Estado para controlar a mensagem de não autenticado
   const [token, setToken] = useState<string | null>(null); // Estado para armazenar o token
+  const [modoClaro, setModoClaro] = useState(false); // Estado para controlar o modo claro
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
@@ -128,8 +131,27 @@ export default function InterfaceAgendamento() {
     setModalAberto(false);
   }
 
+  const abrirModalCampos = () => {
+    setModalCamposAberto(true);
+  }
+
+  const fecharModalCampos = () => {
+    setModalCamposAberto(false);
+  }
+
+  const toggleModoClaro = () => {
+    setModoClaro(!modoClaro);
+    if (!modoClaro) {
+      document.documentElement.style.backgroundColor = 'white';
+      document.documentElement.style.color = 'black';
+    } else {
+      document.documentElement.style.backgroundColor = 'black';
+      document.documentElement.style.color = 'white';
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white p-6 flex flex-col space-y-6">
+    <div className={`min-h-screen ${modoClaro ? 'bg-white text-black' : 'bg-black text-white'} p-6 flex flex-col space-y-6`}>
       {naoAutenticado && (
         <div className="text-center text-lg font-semibold">
           NÃO AUTENTICADO
@@ -138,25 +160,25 @@ export default function InterfaceAgendamento() {
       {!naoAutenticado && agendamentos.length > 0 ? (
         <div className="space-y-4">
           {agendamentos.map((agendamento, index) => (
-            <div key={index} className="bg-zinc-900 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div key={index} className={`bg-zinc-900 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center ${modoClaro ? 'bg-zinc-200 text-black' : 'bg-zinc-900 text-white'}`}>
               <span className="text-lg font-semibold mb-2 sm:mb-0">
                 {perfis[agendamento.idcliente]?.nomereal || agendamento.idcliente} {/* Exibe o nome real ou o ID */}
               </span>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(agendamento.horario).map((dia, diaIndex) => (
                   <div key={diaIndex} className="flex items-center">
-                    <span className="bg-green-600 text-black px-3 py-1 rounded-full text-sm mr-2">
+                    <span className={`bg-green-600 text-black px-3 py-1 rounded-full text-sm mr-2 ${modoClaro ? 'bg-green-200 text-black' : 'bg-green-600 text-black'}`}>
                       {dia.charAt(0).toUpperCase() + dia.slice(1)}
                     </span>
-                    <span className="bg-green-600 text-black px-3 py-1 rounded-full text-sm">
+                    <span className={`bg-green-600 text-black px-3 py-1 rounded-full text-sm ${modoClaro ? 'bg-green-200 text-black' : 'bg-green-600 text-black'}`}>
                       {agendamento.horario[dia].map(horario => horario.charAt(0).toUpperCase() + horario.slice(1)).join(', ')}
                     </span>
-                    <span className="bg-green-600 text-black px-3 py-1 rounded-full text-sm ml-2">
+                    <span className={`bg-green-600 text-black px-3 py-1 rounded-full text-sm ml-2 ${modoClaro ? 'bg-green-200 text-black' : 'bg-green-600 text-black'}`}>
                       R$ {precos[agendamento.idcampo] || 'N/A'} {/* Exibe o preço ou 'N/A' se não disponível */}
                     </span>
                     <button 
                       onClick={() => apagarAgendamento(agendamento.id).then(() => window.location.reload())}
-                      className="bg-red-600 text-white px-3 py-1 rounded-full text-sm ml-2"
+                      className={`bg-red-600 text-white px-3 py-1 rounded-full text-sm ml-2 ${modoClaro ? 'bg-red-200 text-black' : 'bg-red-600 text-white'}`}
                     >
                       Apagar
                     </button>
@@ -180,7 +202,7 @@ export default function InterfaceAgendamento() {
         <ChevronDown size={24} className={`text-gray-400 transition-transform duration-300 ${expandido ? 'transform rotate-180' : ''}`} />
       </button>
 
-      <div className="bg-zinc-900 rounded-lg p-6 space-y-6">
+      <div className={`bg-zinc-900 rounded-lg p-6 space-y-6 ${modoClaro ? 'bg-zinc-200 text-black' : 'bg-zinc-900 text-white'}`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
@@ -223,7 +245,10 @@ export default function InterfaceAgendamento() {
               <Plus size={16} className="mr-2" />
               Adicionar campo
             </button>
-            <button className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center">
+            <button 
+              onClick={abrirModalCampos} 
+              className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center"
+            >
               <Settings size={16} className="mr-2" />
               Gerenciar campos
             </button>
@@ -231,10 +256,17 @@ export default function InterfaceAgendamento() {
               <Briefcase size={16} className="mr-2" />
               Gerenciar empresa
             </button>
+            <button 
+              onClick={toggleModoClaro} 
+              className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center"
+            >
+              {modoClaro ? 'Modo Escuro' : 'Modo Claro'}
+            </button>
           </div>
         </div>
       </div>
-      {modalAberto && <ModalCampo onClose={fecharModal} token={token} />} {/* Passa o token ao componente ModalCampo */}
+      {modalAberto && token && <ModalCampo onClose={fecharModal} token={token} />} {/* Passa o token ao componente ModalCampo, garantindo que não seja nulo */}
+      {modalCamposAberto && token && <ModalCampos aoFechar={fecharModalCampos} token={token} />} {/* Passa o token ao componente ModalCampos, garantindo que não seja nulo */}
     </div>
   )
 }
