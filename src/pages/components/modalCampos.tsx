@@ -33,7 +33,7 @@ export default function ModalGerenciamentoCampos({ aoFechar, token }: ModalGeren
   const buscarCampos = async () => {
     setEstaCarregando(true)
     try {
-      const resposta = await fetch('http://localhost:4444/api/businessManagement/campos', {
+      const resposta = await fetch('http://168.138.151.78:3000/api/businessManagement/campos', {
         headers: {
           'Authorization': token
         }
@@ -58,7 +58,7 @@ export default function ModalGerenciamentoCampos({ aoFechar, token }: ModalGeren
   const handleDeletar = async (id: number) => {
     if (window.confirm('Tem certeza que deseja excluir este campo?')) {
       try {
-        const resposta = await fetch(`http://localhost:4444/api/businessManagement/delete-campo/${id}`, {
+        const resposta = await fetch(`http://168.138.151.78:3000/api/businessManagement/delete-campo/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': token
@@ -76,7 +76,7 @@ export default function ModalGerenciamentoCampos({ aoFechar, token }: ModalGeren
 
   const handleSalvar = async (campoAtualizado: Campo) => {
     try {
-      const resposta = await fetch(`http://localhost:4444/api/businessManagement/campo/${campoAtualizado.id}`, {
+      const resposta = await fetch(`http://168.138.151.78:3000/api/businessManagement/campo/${campoAtualizado.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': token,

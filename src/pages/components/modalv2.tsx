@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { X, Image, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface Horario {
@@ -59,6 +59,7 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
   const [sliderPosition, setSliderPosition] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [campos, setCampos] = useState([]);
 
   const handleHorarioToggle = (id: number) => {
     setHorariosDisponiveis(prev => {
@@ -95,31 +96,62 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
   }
 
   const enviarInformacoes = async () => {
-    const formData = new FormData()
-    formData.append('nomeCampo', nomeCampo)
-    formData.append('preco', preco)
-    formData.append('disponibilidade', disponivel ? '1' : '0')
-    const horariosJson = JSON.stringify(horariosDisponiveis)
-    formData.append('horarios', horariosJson)
+    const formData = new FormData();
+
+    // Adiciona os dados ao FormData
+    formData.append('nomeCampo', nomeCampo);
+    formData.append('preco', preco);
+    formData.append('disponibilidade', disponivel ? '1' : '0');
+
+    // Adiciona os horários como um objeto
+    const horariosObj = {
+      segunda: horariosDisponiveis.segunda,
+      terca: horariosDisponiveis.terca,
+      quarta: horariosDisponiveis.quarta,
+      quinta: horariosDisponiveis.quinta,
+      sexta: horariosDisponiveis.sexta,
+    };
+
+    // Adiciona o objeto de horários ao FormData
+    formData.append('horarios', JSON.stringify(horariosObj)); // Aqui ainda está correto, pois o FormData não aceita objetos diretamente
+
+    // Se houver um arquivo de banner, adiciona ao FormData
     if (bannerFile) {
-      formData.append('bannerCampo', bannerFile)
+      formData.append('bannerCampo', bannerFile); // Envia o arquivo do banner com o nome 'bannerCampo'
     }
 
-    const response = await fetch('http://localhost:4444/api/businessManagement/campo', {
-      method: 'POST',
-      headers: {
-        'Authorization': token,
-      },
-      body: formData
-    })
+    try {
+      // Envia os dados para a mesma rota
+      const response = await fetch('http://168.138.151.78:3000/api/businessManagement/campo', {
+        method: 'POST',
+        headers: {
+          'Authorization': token,
+          // Não defina 'Content-Type' aqui, o navegador irá definir automaticamente para multipart/form-data
+        },
+        body: formData // O FormData é enviado como corpo da requisição
+      });
 
-    if (response.ok) {
-      console.log('Informações enviadas com sucesso!')
-      onClose() // Fecha o modal após enviar as informações
-    } else {
-      console.error(`Erro ao enviar as informações. Token: ${token}`)
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('Informações enviadas com sucesso!', responseData);
+        onClose(); // Fecha o modal após o envio
+      } else {
+        const errorData = await response.json();
+        console.error('Erro ao enviar as informações:', errorData.message);
+      }
+    } catch (error) {
+      console.error('Erro ao enviar as informações:', error);
     }
-  }
+  };
+
+  useEffect(() => {
+    const fetchCampos = async () => {
+      const camposFormatados = await buscarCampos();
+      setCampos(camposFormatados);
+    };
+
+    fetchCampos();
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">

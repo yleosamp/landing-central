@@ -22,7 +22,7 @@ function LoginPage() {
     };
 
     try {
-      const response = await fetch('http://localhost:4444/api/autenticacao/login', {
+      const response = await fetch('http://168.138.151.78:3000/api/autenticacao/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

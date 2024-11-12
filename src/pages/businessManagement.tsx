@@ -43,51 +43,81 @@ export default function InterfaceAgendamento() {
 
   useEffect(() => {
     const fetchAgendamentos = async () => {
-      const token = localStorage.getItem('authorization'); // Obtém o token de autorização do localStorage
-      setToken(token); // Atualiza o estado do token
+      const token = localStorage.getItem('authorization');
+      setToken(token);
       if (!token) {
-        setNaoAutenticado(true); // Se não tiver token, seta como não autenticado
+        setNaoAutenticado(true);
         return;
       }
-      const response = await fetch('http://localhost:4444/api/businessManagement/agendamentos', {
-        headers: {
-          'Authorization': token ? token : '' // Garante que o token não seja null
-        }
-      })
-      const data = await response.json()
-      setAgendamentos(data.agendamentos || []) // Se não existir nenhum agendamento, faça um json vazio
-
-      // Busca os perfis dos clientes
-      const perfilPromises = data.agendamentos.map((agendamento: Agendamento) =>
-        fetch(`http://localhost:4444/api/accountmanagement/profile/${agendamento.idcliente}`, {
+      
+      try {
+        const response = await fetch('http://168.138.151.78:3000/api/businessManagement/agendamentos', {
           headers: {
-            'Authorization': token ? token : '' // Garante que o token não seja null
+            'Authorization': token
           }
-        })
-          .then(res => res.json())
-          .then(profileData => {
-            setPerfis(prev => ({ ...prev, [agendamento.idcliente]: profileData.profile }));
-          })
-      );
+        });
+        const data = await response.json();
+        
+        const agendamentosData = data.agendamentos || [];
+        setAgendamentos(agendamentosData);
 
-      // Busca os preços dos campos
-      const precoPromises = data.agendamentos.map((agendamento: Agendamento) =>
-        fetch(`http://localhost:4444/api/home/campos/${agendamento.idcampo}`, {
-          headers: {
-            'Authorization': token ? token : '' // Garante que o token não seja null
-          }
-        })
-          .then(res => res.json())
-          .then(precoData => {
-            setPrecos(prev => ({ ...prev, [agendamento.idcampo]: precoData[0].preco })); // Armazena o preço
+        // Busca os perfis dos clientes
+        const perfilPromises = agendamentosData.map((agendamento: Agendamento) =>
+          fetch(`http://168.138.151.78:3000/api/accountmanagement/profile/${agendamento.idcliente}`, {
+            headers: {
+              'Authorization': token
+            }
           })
-      );
+            .then(async res => {
+              const perfilData = await res.json();
+              // Atualiza o estado dos perfis com o nome real do usuário
+              setPerfis(prev => ({
+                ...prev,
+                [agendamento.idcliente]: {
+                  id: agendamento.idcliente,
+                  nomereal: perfilData.profile?.nomereal || `Cliente ${agendamento.idcliente}`
+                }
+              }));
+            })
+            .catch(() => {
+              setPerfis(prev => ({
+                ...prev,
+                [agendamento.idcliente]: {
+                  id: agendamento.idcliente,
+                  nomereal: `Cliente ${agendamento.idcliente}`
+                }
+              }));
+            })
+        );
 
-      await Promise.all(perfilPromises);
-      await Promise.all(precoPromises);
-    }
-    fetchAgendamentos()
-  }, [])
+        // Busca os preços dos campos
+        const precoPromises = agendamentosData.map((agendamento: Agendamento) =>
+          fetch(`http://168.138.151.78:3000/api/home/campos/${agendamento.idcampo}`, {
+            headers: {
+              'Authorization': token
+            }
+          })
+            .then(res => res.json())
+            .then(precoData => {
+              // Verifica se precoData existe e tem dados
+              const preco = precoData && precoData[0] ? precoData[0].preco : 0;
+              setPrecos(prev => ({ ...prev, [agendamento.idcampo]: preco }));
+            })
+            .catch(() => {
+              setPrecos(prev => ({ ...prev, [agendamento.idcampo]: 0 }));
+            })
+        );
+
+        // Aguarda todas as promises
+        await Promise.all([...perfilPromises, ...precoPromises]);
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        setAgendamentos([]);
+      }
+    };
+
+    fetchAgendamentos();
+  }, []);
 
   useEffect(() => {
     setLucroSemanal(agendamentos.reduce((total, agendamento) => total + (precos[agendamento.idcampo] || 0), 0));
@@ -112,7 +142,7 @@ export default function InterfaceAgendamento() {
       setNaoAutenticado(true); // Se não tiver token, seta como não autenticado
       return;
     }
-    const response = await fetch(`http://localhost:4444/api/businessManagement/delete-agendamento/${id}`, {
+    const response = await fetch(`http://168.138.151.78:3000/api/businessManagement/delete-agendamento/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': token ? token : '' // Usa o token de autorização obtido

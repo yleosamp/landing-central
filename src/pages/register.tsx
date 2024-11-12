@@ -60,7 +60,7 @@ export default function RegistrationPage() {
     if (imagemAvatar) formData.append('imagemAvatar', imagemAvatar)
 
     try {
-      const response = await fetch('http://localhost:4444/api/autenticacao/registro', {
+      const response = await fetch('http://168.138.151.78:3000/api/autenticacao/registro', {
         method: 'POST',
         body: formData,
       })
@@ -215,7 +215,7 @@ export default function RegistrationPage() {
                   className="form-input"
                 />
               </div>
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="imagemAvatar">Imagem Avatar</label>
                 <input
                   id="imagemAvatar"
@@ -224,7 +224,7 @@ export default function RegistrationPage() {
                   required
                   className="form-input"
                 />
-              </div>
+              </div> */}
               <div className="form-group">
                 <label htmlFor="horarioAbertura">Horário de Abertura</label>
                 <input
