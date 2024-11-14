@@ -264,7 +264,7 @@ const App = () => {
               Ofereça aos seus funcionários uma plataforma para organizar partidas de futebol e fortalecer o espírito de equipe. Aumente a produtividade e o bem-estar no ambiente de trabalho.
             </p>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <a href="#" style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BA55D'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4ECB71'}>
+              <a href="/register" style={buttonStyle} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#3BA55D'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4ECB71'}>
                 Criar sua empresa
               </a>
               <a href="/login" style={secondaryButtonStyle} onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#000000';}} onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#FFFFFF';}}>

@@ -19,11 +19,8 @@ export default function RegistrationPage() {
   const [nome, setNome] = useState('')
   const [endereco, setEndereco] = useState('')
   const [cidade, setCidade] = useState('')
-  const [enderecoMaps, setEnderecoMaps] = useState('')
   const [precoMedio, setPrecoMedio] = useState(0)
-  const [totalSemanal, setTotalSemanal] = useState(0)
   const [imagemBanner, setImagemBanner] = useState(null)
-  const [imagemAvatar, setImagemAvatar] = useState(null)
   const [horarioAbertura, setHorarioAbertura] = useState('')
   const [horarioFechamento, setHorarioFechamento] = useState('')
   const [CNPJ, setCNPJ] = useState('')
@@ -37,6 +34,25 @@ export default function RegistrationPage() {
     setStep(2)
   }
 
+  const formatarCNPJ = (value) => {
+    // Remove caracteres não numéricos
+    const apenasNumeros = value.replace(/\D/g, '');
+    // Formata o CNPJ
+    if (apenasNumeros.length <= 14) {
+      return apenasNumeros
+        .replace(/(\d{2})(\d)/, '$1.$2') // Adiciona o primeiro ponto
+        .replace(/(\d{3})(\d)/, '$1.$2') // Adiciona o segundo ponto
+        .replace(/(\d{3})(\d)/, '$1/$2') // Adiciona a barra
+        .replace(/(\d{4})(\d)/, '$1-$2'); // Adiciona o traço
+    }
+    return value;
+  };
+
+  const handleCNPJChange = (event) => {
+    const formattedCNPJ = formatarCNPJ(event.target.value);
+    setCNPJ(formattedCNPJ);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
@@ -48,16 +64,15 @@ export default function RegistrationPage() {
     formData.append('nome', nome)
     formData.append('endereco', endereco)
     formData.append('cidade', cidade)
-    formData.append('enderecoMaps', enderecoMaps)
+    formData.append('enderecoMaps', ''); // Envia um espaço vazio
     formData.append('precoMedio', precoMedio.toString())
-    formData.append('totalSemanal', totalSemanal.toString())
+    formData.append('totalSemanal', ''); // Envia um espaço vazio
     formData.append('horarioFuncionamento', `${horarioAbertura} - ${horarioFechamento}`)
     formData.append('abertoFechado', '1')
     formData.append('nivelUsuario', '2')
     formData.append('nivelEmpresa', '1')
     formData.append('CNPJ', CNPJ)
     if (imagemBanner) formData.append('imagemBanner', imagemBanner)
-    if (imagemAvatar) formData.append('imagemAvatar', imagemAvatar)
 
     try {
       const response = await fetch('http://168.138.151.78:3000/api/autenticacao/registro', {
@@ -170,18 +185,6 @@ export default function RegistrationPage() {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="enderecoMaps">Link do Mapa</label>
-                <input
-                  id="enderecoMaps"
-                  type="text"
-                  placeholder="Link do Google Maps"
-                  value={enderecoMaps}
-                  onChange={(e) => setEnderecoMaps(e.target.value)}
-                  required
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
                 <label htmlFor="precoMedio">Preço Médio</label>
                 <input
                   id="precoMedio"
@@ -189,18 +192,6 @@ export default function RegistrationPage() {
                   placeholder="Preço Médio"
                   value={precoMedio}
                   onChange={(e) => setPrecoMedio(Number(e.target.value))}
-                  required
-                  className="form-input"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="totalSemanal">Total Semanal</label>
-                <input
-                  id="totalSemanal"
-                  type="number"
-                  placeholder="Total Semanal"
-                  value={totalSemanal}
-                  onChange={(e) => setTotalSemanal(Number(e.target.value))}
                   required
                   className="form-input"
                 />
@@ -215,16 +206,6 @@ export default function RegistrationPage() {
                   className="form-input"
                 />
               </div>
-              {/* <div className="form-group">
-                <label htmlFor="imagemAvatar">Imagem Avatar</label>
-                <input
-                  id="imagemAvatar"
-                  type="file"
-                  onChange={(e) => setImagemAvatar(e.target.files ? e.target.files[0] : null)}
-                  required
-                  className="form-input"
-                />
-              </div> */}
               <div className="form-group">
                 <label htmlFor="horarioAbertura">Horário de Abertura</label>
                 <input
@@ -254,7 +235,7 @@ export default function RegistrationPage() {
                   type="text"
                   placeholder="CNPJ da Empresa"
                   value={CNPJ}
-                  onChange={(e) => setCNPJ(e.target.value)}
+                  onChange={handleCNPJChange} // Chama a função de formatação ao digitar
                   required
                   className="form-input"
                 />
