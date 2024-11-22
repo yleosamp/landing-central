@@ -14,6 +14,8 @@ interface Agendamento {
     [dia: string]: string[]
   }
   idempresa: number
+  precocampo: number
+  nomecliente: string
 }
 
 interface Profile {
@@ -21,17 +23,12 @@ interface Profile {
   nomereal: string
 }
 
-interface Preco {
-  [idcampo: number]: number; // Armazena os preços dos campos
-}
-
 const agendamentosIniciais: Agendamento[] = []
 
 export default function InterfaceAgendamento() {
   const [expandido, setExpandido] = useState(false)
-  const [agendamentos, setAgendamentos] = useState(agendamentosIniciais)
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>(agendamentosIniciais)
   const [perfis, setPerfis] = useState<Record<number, Profile>>({}) // Armazena os perfis dos clientes
-  const [precos, setPrecos] = useState<Preco>({}) // Armazena os preços dos campos
   const [semanaAtual, setSemanaAtual] = useState(1)
   const [dropdownAberto, setDropdownAberto] = useState(false)
   const [lucroSemanal, setLucroSemanal] = useState(0) // Armazena o lucro semanal
@@ -90,26 +87,8 @@ export default function InterfaceAgendamento() {
             })
         );
 
-        // Busca os preços dos campos
-        const precoPromises = agendamentosData.map((agendamento: Agendamento) =>
-          fetch(`http://168.138.151.78:3000/api/home/campos/${agendamento.idcampo}`, {
-            headers: {
-              'Authorization': token
-            }
-          })
-            .then(res => res.json())
-            .then(precoData => {
-              // Verifica se precoData existe e tem dados
-              const preco = precoData && precoData[0] ? precoData[0].preco : 0;
-              setPrecos(prev => ({ ...prev, [agendamento.idcampo]: preco }));
-            })
-            .catch(() => {
-              setPrecos(prev => ({ ...prev, [agendamento.idcampo]: 0 }));
-            })
-        );
-
         // Aguarda todas as promises
-        await Promise.all([...perfilPromises, ...precoPromises]);
+        await Promise.all([...perfilPromises]);
       } catch (error) {
         console.error('Erro ao buscar dados:', error);
         setAgendamentos([]);
@@ -120,8 +99,8 @@ export default function InterfaceAgendamento() {
   }, []);
 
   useEffect(() => {
-    setLucroSemanal(agendamentos.reduce((total, agendamento) => total + (precos[agendamento.idcampo] || 0), 0));
-  }, [agendamentos, precos]);
+    setLucroSemanal(agendamentos.reduce((total, agendamento) => total + (agendamento.precocampo || 0), 0));
+  }, [agendamentos]);
 
   const toggleExpandido = () => {
     setExpandido(!expandido)
@@ -192,7 +171,7 @@ export default function InterfaceAgendamento() {
           {agendamentos.map((agendamento, index) => (
             <div key={index} className={`bg-zinc-900 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center ${modoClaro ? 'bg-zinc-200 text-black' : 'bg-zinc-900 text-white'}`}>
               <span className="text-lg font-semibold mb-2 sm:mb-0">
-                {perfis[agendamento.idcliente]?.nomereal || agendamento.idcliente} {/* Exibe o nome real ou o ID */}
+                {agendamento.nomecliente || `Cliente ${agendamento.idcliente}`} {/* Exibe o nome do cliente ou o ID */}
               </span>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(agendamento.horario).map((dia, diaIndex) => (
@@ -204,7 +183,7 @@ export default function InterfaceAgendamento() {
                       {agendamento.horario[dia].map(horario => horario.charAt(0).toUpperCase() + horario.slice(1)).join(', ')}
                     </span>
                     <span className={`bg-green-600 text-black px-3 py-1 rounded-full text-sm ml-2 ${modoClaro ? 'bg-green-200 text-black' : 'bg-green-600 text-black'}`}>
-                      R$ {precos[agendamento.idcampo] || 'N/A'} {/* Exibe o preço ou 'N/A' se não disponível */}
+                      R$ {agendamento.precocampo || 'N/A'} {/* Exibe o preço ou 'N/A' se não disponível */}
                     </span>
                     <button 
                       onClick={() => apagarAgendamento(agendamento.id).then(() => window.location.reload())}
