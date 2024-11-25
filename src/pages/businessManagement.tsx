@@ -163,6 +163,7 @@ export default function InterfaceAgendamento() {
       <div className="container mx-auto px-4 py-8">
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-green-500">Central da Resenha</h1>
+          <button onClick={() => { localStorage.removeItem('authorization'); window.location.href = '/login'; }} className="p-2 text-white ml-auto">Sair</button>
           <button
             onClick={toggleModoEscuro}
             className={`p-2 rounded-full ${modoEscuro ? 'bg-white text-black' : 'bg-black text-white'}`}
