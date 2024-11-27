@@ -35,64 +35,64 @@ export default function InterfaceAgendamento() {
   const [token, setToken] = useState<string | null>(null)
   const [modoEscuro, setModoEscuro] = useState(true)
 
-  useEffect(() => {
-    const fetchAgendamentos = async () => {
-      const token = localStorage.getItem('authorization');
-      setToken(token);
-      if (!token) {
-        setNaoAutenticado(true);
-        return;
-      }
+  const fetchAgendamentos = async () => {
+    const token = localStorage.getItem('authorization');
+    setToken(token);
+    if (!token) {
+      setNaoAutenticado(true);
+      return;
+    }
+    
+    try {
+      const response = await fetch('http://168.138.151.78:3000/api/businessManagement/agendamentos', {
+        headers: {
+          'Authorization': token
+        }
+      });
+      const data = await response.json();
       
-      try {
-        const response = await fetch('http://168.138.151.78:3000/api/businessManagement/agendamentos', {
-          headers: {
-            'Authorization': token
-          }
-        });
-        const data = await response.json();
-        
-        const agendamentosData = data.agendamentos || [];
-        setAgendamentos(agendamentosData);
+      const agendamentosData = data.agendamentos || [];
+      setAgendamentos(agendamentosData);
 
-        const perfilPromises = agendamentosData
-          .filter(agendamento => agendamento.idcliente)
-          .map((agendamento: Agendamento) =>
-            fetch(`http://168.138.151.78:3000/api/accountmanagement/profile/${agendamento.idcliente}`, {
-              headers: {
-                'Authorization': token
-              }
+      const perfilPromises = agendamentosData
+        .filter(agendamento => agendamento.idcliente)
+        .map((agendamento: Agendamento) =>
+          fetch(`http://168.138.151.78:3000/api/accountmanagement/profile/${agendamento.idcliente}`, {
+            headers: {
+              'Authorization': token
+            }
+          })
+            .then(async res => {
+              if (!res.ok) throw new Error('Falha ao buscar perfil');
+              const perfilData = await res.json();
+              setPerfis(prev => ({
+                ...prev,
+                [agendamento.idcliente]: {
+                  id: agendamento.idcliente,
+                  nomereal: perfilData.profile?.nomereal || `Cliente ${agendamento.idcliente}`
+                }
+              }));
             })
-              .then(async res => {
-                if (!res.ok) throw new Error('Falha ao buscar perfil');
-                const perfilData = await res.json();
-                setPerfis(prev => ({
-                  ...prev,
-                  [agendamento.idcliente]: {
-                    id: agendamento.idcliente,
-                    nomereal: perfilData.profile?.nomereal || `Cliente ${agendamento.idcliente}`
-                  }
-                }));
-              })
-              .catch((error) => {
-                console.error(`Erro ao buscar perfil ${agendamento.idcliente}:`, error);
-                setPerfis(prev => ({
-                  ...prev,
-                  [agendamento.idcliente]: {
-                    id: agendamento.idcliente,
-                    nomereal: `Cliente ${agendamento.idcliente}`
-                  }
-                }));
-              })
-          );
+            .catch((error) => {
+              console.error(`Erro ao buscar perfil ${agendamento.idcliente}:`, error);
+              setPerfis(prev => ({
+                ...prev,
+                [agendamento.idcliente]: {
+                  id: agendamento.idcliente,
+                  nomereal: `Cliente ${agendamento.idcliente}`
+                }
+              }));
+            })
+        );
 
-        await Promise.all(perfilPromises);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        setAgendamentos([]);
-      }
-    };
+      await Promise.all(perfilPromises);
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+      setAgendamentos([]);
+    }
+  };
 
+  useEffect(() => {
     fetchAgendamentos()
   }, [])
 
@@ -105,14 +105,26 @@ export default function InterfaceAgendamento() {
       setNaoAutenticado(true)
       return
     }
-    const response = await fetch(`http://168.138.151.78:3000/api/businessManagement/delete-agendamento/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': token
+    
+    if (confirm('Tem certeza que deseja apagar este agendamento?')) {
+      try {
+        const response = await fetch(`http://168.138.151.78:3000/api/businessManagement/delete-agendamento/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': token
+          }
+        })
+        
+        if (response.ok) {
+          alert('Agendamento apagado com sucesso!')
+          setTimeout(() => {
+            window.location.reload()
+          }, 100)
+        }
+      } catch (error) {
+        console.error('Erro ao apagar agendamento:', error)
+        alert('Erro ao apagar agendamento')
       }
-    })
-    if (response.ok) {
-      setAgendamentos(prev => prev.filter(agendamento => agendamento.id !== id))
     }
   }
 
@@ -191,14 +203,14 @@ export default function InterfaceAgendamento() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => setModalCampoAberto(true)}
-                    className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center"
+                    className="w-full sm:w-auto bg-green-500  text-black px-4 py-2 rounded-lg flex items-center justify-center"
                   >
                     <Plus size={16} className="mr-2" />
                     Adicionar campo
                   </button>
                   <button
                     onClick={() => setModalGerenciamentoAberto(true)}
-                    className="w-full sm:w-auto bg-green-600 text-black px-4 py-2 rounded-lg flex items-center justify-center"
+                    className="w-full sm:w-auto bg-green-500  text-black px-4 py-2 rounded-lg flex items-center justify-center"
                   >
                     <Settings size={16} className="mr-2" />
                     Gerenciar campos

@@ -57,7 +57,7 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
     terca: [],
     quarta: [],
     quinta: [],
-    sexta: [],
+    sexta: []
   })
   const [sliderPosition, setSliderPosition] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -65,18 +65,35 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
   const [bannerPreview, setBannerPreview] = useState<string | null>(null)
 
   const handleHorarioToggle = (id: number) => {
+    const horario = horariosIniciais.find(h => h.id === id)
+    if (!horario) return
+
     setHorariosDisponiveis(prev => {
-      const horario = horariosIniciais.find(horario => horario.id === id)
-      if (horario) {
-        const newHorarios = { ...prev }
-        if (newHorarios[horario.dia].includes(horario.hora)) {
-          newHorarios[horario.dia] = newHorarios[horario.dia].filter(h => h !== horario.hora)
-        } else {
-          newHorarios[horario.dia] = [...newHorarios[horario.dia], horario.hora].sort()
-        }
-        return newHorarios
+      const newHorarios = { ...prev }
+      const horaClicada = horario.hora
+      
+      // Verifica se o horário já existe em algum dia
+      const horarioJaExiste = Object.values(newHorarios).some(
+        horarios => horarios.includes(horaClicada)
+      )
+
+      // Se existir em qualquer dia, remove de todos
+      if (horarioJaExiste) {
+        Object.keys(newHorarios).forEach(dia => {
+          newHorarios[dia] = newHorarios[dia].filter(h => h !== horaClicada)
+        })
+      } 
+      // Se não existir, adiciona em todos os dias
+      else {
+        Object.keys(newHorarios).forEach(dia => {
+          if (!newHorarios[dia].includes(horaClicada)) {
+            newHorarios[dia] = [...newHorarios[dia], horaClicada].sort()
+          }
+        })
       }
-      return prev
+
+      console.log('Estado atualizado dos horários:', newHorarios)
+      return newHorarios
     })
   }
 
@@ -104,11 +121,24 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
   }
 
   const enviarInformacoes = async () => {
+    // Primeiro, vamos verificar se há horários selecionados
+    console.log('Horários antes de enviar:', horariosDisponiveis)
+
+    // Remover dias vazios
+    const horariosLimpos = Object.fromEntries(
+      Object.entries(horariosDisponiveis).filter(([_, horarios]) => horarios.length > 0)
+    )
+
     const formData = new FormData()
     formData.append('nomeCampo', nomeCampo)
     formData.append('preco', preco)
     formData.append('disponibilidade', disponivel ? '1' : '0')
-    formData.append('horarios', JSON.stringify(horariosDisponiveis))
+    
+    // Garantir que os horários sejam enviados corretamente
+    const horariosJSON = JSON.stringify(horariosDisponiveis)
+    console.log('Horários sendo enviados:', horariosJSON)
+    formData.append('horarios', horariosJSON)
+
     if (bannerFile) {
       formData.append('bannerCampo', bannerFile)
     }
@@ -124,16 +154,20 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
 
       if (response.ok) {
         const responseData = await response.json()
-        console.log('Informações enviadas com sucesso!', responseData)
+        console.log('Resposta da API:', responseData)
         onClose()
       } else {
         const errorData = await response.json()
-        console.error('Erro ao enviar as informações:', errorData.message)
+        console.error('Erro ao enviar as informações:', errorData)
       }
     } catch (error) {
       console.error('Erro ao enviar as informações:', error)
     }
   }
+
+  useEffect(() => {
+    console.log('Horários atualizados:', horariosDisponiveis)
+  }, [horariosDisponiveis])
 
   return (
     <motion.div
@@ -157,7 +191,7 @@ export default function ModalCampo({ onClose, token }: { onClose: () => void, to
         </button>
 
         <div className="h-full overflow-y-auto px-4 custom-scrollbar">
-          <h2 className="text-3xl font-bold text-green-400 mb-6">Adicionar Novo Campo</h2>
+          <h2 className="text-3xl font-bold text-green-400 mb-6">Adicionar novo campo</h2>
 
           <div className="space-y-6">
             <div 
